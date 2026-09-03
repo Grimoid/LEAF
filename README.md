@@ -7,10 +7,6 @@ tree-based RL method for speech-aware large language model (SALLM) post-training
 
 Paper link:[https://arxiv.org/pdf/2606.07610](https://arxiv.org/pdf/2606.07610)
 
-The training stack is Ray + DeepSpeed (ZeRO-2) + LoRA with in-actor HuggingFace generation.
-This is the code that produced the results reported in the paper; the default configuration
-(`scripts/configs/defaults.yaml`) is the configuration of those runs.
-
 
 ## Citation
 
