@@ -2,9 +2,7 @@
 
 Code for **LEAF** (**L**ow-rank **E**xploration with **A**daptive **F**orking), a retrospective
 tree-based RL method for speech-aware large language model (SALLM) post-training, and the
-**GRPO** baseline it is compared against — on IBM Granite Speech 3.3 2B/8B, Granite-4.0-1B-Speech
-and Qwen2-Audio-7B, for spoken question answering (LibriSQA, DailyTalk, LongAudio) and speech
-translation (CoVoST2 En→De). This repository accompanies the EMNLP 2026 paper
+**GRPO** baseline it is compared against. This repository accompanies the EMNLP 2026 paper
 *"LEAF: Growing Trees Without Branching for Speech-Aware Large Language Model Post-Training"*.
 
 The training stack is Ray + DeepSpeed (ZeRO-2) + LoRA with in-actor HuggingFace generation.
