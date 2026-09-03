@@ -5,7 +5,7 @@ tree-based RL method for speech-aware large language model (SALLM) post-training
 **GRPO** baseline it is compared against. This repository accompanies the EMNLP 2026 paper
 *"LEAF: Growing Trees Without Branching for Speech-Aware Large Language Model Post-Training"*.
 
-Paper link:[https://arxiv.org/pdf/2606.07610](https://arxiv.org/pdf/2606.07610)
+Paper link: [https://arxiv.org/pdf/2606.07610](https://arxiv.org/pdf/2606.07610)
 
 
 ## Citation
