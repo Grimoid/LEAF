@@ -1,0 +1,18 @@
+# Model registry. `family` selects the loaders / Ray actors (granite vs qwen).
+granite3_2b:
+  hf_id: ibm-granite/granite-speech-3.3-2b
+  family: granite
+
+granite3_8b:
+  hf_id: ibm-granite/granite-speech-3.3-8b
+  family: granite
+
+granite4_1b:
+  hf_id: ibm-granite/granite-4.0-1b-speech
+  family: granite
+
+qwen2_7b:
+  hf_id: Qwen/Qwen2-Audio-7B
+  family: qwen
+  defaults:               # Qwen2-Audio uses a longer prompt budget than Granite
+    prompt_max_len: 1024

@@ -1,0 +1,11 @@
+LEAF — prefix-tree reinforcement learning for speech-aware LLMs
+Copyright 2026 Argyrios Gerogiannis
+
+This product includes software developed in the OpenRLHF project
+(https://github.com/OpenRLHF/OpenRLHF) and in TreeRL
+(https://github.com/THUDM/TreeRL), both distributed under the
+Apache License, Version 2.0.
+
+The VoiceBench evaluation (scripts/voicebench/) reproduces the open-ended QA judge
+rubric of VoiceBench (https://github.com/MatthewCYM/VoiceBench), distributed under
+the Apache License, Version 2.0. No VoiceBench code or data is redistributed here.

@@ -1,0 +1,30 @@
+# Dataset registry (the four benchmarks of the paper). Paths are relative to
+# $SPEECH_DATA_ROOT (see scripts/data_prep/). Each prepared dataset is a HuggingFace
+# `save_to_disk` directory with a `dataset/` subfolder whose rows are
+# {"prompt", "reference", "audio"}.
+#   task: qa -> scripts/eval/eval_librisqa[_qwen].py ; translation -> eval_covost2[_qwen].py
+#   eval_data_dir defaults to data_dir.
+
+# ---- short-form spoken QA ----
+librisqa:
+  data_dir: ${SPEECH_DATA_ROOT}/librisqa_part1
+  task: qa
+  bertscore_lang: en
+
+# ---- long-form spoken QA (LongAudio-derived; audio capped at 40 s) ----
+dailytalk:
+  data_dir: ${SPEECH_DATA_ROOT}/dailytalk_longaudio_nomcq   # DailyTalk with multiple-choice examples removed
+  task: qa
+  bertscore_lang: en
+
+longaudio:
+  data_dir: ${SPEECH_DATA_ROOT}/speech_longaudio            # Europarl-ST + VoxPopuli split
+  task: qa
+  bertscore_lang: en
+
+# ---- speech translation ----
+covost2:
+  data_dir: ${SPEECH_DATA_ROOT}/covost2_en_de
+  eval_data_dir: ${SPEECH_DATA_ROOT}/covost2_en_de_single_prompt
+  task: translation
+  bertscore_lang: de

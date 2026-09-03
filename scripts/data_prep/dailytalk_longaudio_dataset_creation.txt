@@ -1,0 +1,164 @@
+DailyTalk-LongAudio Dataset Creation
+=====================================
+
+Overview
+--------
+The dataset combines two sources to produce a spoken-dialogue QA task where the
+model listens to a full conversation audio and answers an open-ended question
+about it. The answer distribution (~19 words mean) closely matches LibriSQA,
+making BLEU a smooth and meaningful reward signal for RL training.
+
+Final split sizes (max_duration_secs=40):
+  train=28,191  validation=3,630  test=4,060  (total: 35,881)
+
+
+Source 1: QA Metadata — nvidia/LongAudio (HuggingFace Hub)
+-----------------------------------------------------------
+Repository : nvidia/LongAudio
+File       : longaudio_xl/DailyTalk_LongAudio.json
+Subset name: DailyTalkConnectingQA
+
+This JSON file contains 45,951 entries, each describing one QA pair over a
+DailyTalk dialogue session. Each entry has the following relevant fields:
+
+  id            : unique integer identifier for the QA pair
+  sound         : filename of the session-level WAV (e.g. "2235.wav")
+                  The filename stem is the session ID (integer 0–2540)
+  duration      : audio duration in seconds (float)
+  conversations : list (or serialised string) of conversation turns:
+                    [{"from": "human", "value": "<sound>\nQuestion text..."},
+                     {"from": "gpt",   "value": "Answer text..."}]
+
+The nvidia/LongAudio repository does NOT distribute the audio — only this
+JSON metadata. Audio must be obtained from DailyTalk directly (see Source 2).
+
+Note on <sound> placeholder: LongAudio uses "<sound>" where the audio token
+should appear. The prepare script replaces it with "<|audio|>" (Granite Speech
+token) at dataset construction time.
+
+Note on nvidia's audio note: NVIDIA states that "the entire non-segmented
+original wav files are treated as the corresponding audios". This means NVIDIA
+built the session WAVs by concatenating DailyTalk utterances in order, exactly
+as our prepare script does.
+
+
+Source 2: Audio — DailyTalk corpus
+-----------------------------------
+Repository : https://github.com/keonlee9420/DailyTalk
+Download   : Google Drive folder ID 1WRt-EprWs-2rmYxoWYT9_13omlhDHcaL
+             (downloaded via gdown --folder in the shell script)
+
+DailyTalk consists of 2,541 scripted English dialogues between two speakers
+(1 male, 1 female). The raw audio is organised as utterance-level WAV files:
+
+  DailyTalk/
+    dailytalk/
+      data/
+        0/          <- session 0
+          0_0_d0.wav    (turn 0, speaker 0, session 0)
+          1_1_d0.wav    (turn 1, speaker 1, session 0)
+          2_0_d0.wav    ...
+        1/          <- session 1
+          ...
+        2540/       <- session 2540
+
+Filename format: {turn_index}_{speaker_id}_d{session_id}.wav
+
+The actual zip downloaded from Google Drive may have extra directory levels
+(e.g. DailyTalk/ -> dailytalk/ -> data/ -> session dirs). The prepare script
+automatically discovers the correct level by walking up to 3 levels looking
+for a directory whose children are bare-integer subdirectories.
+
+
+Duration Filter
+---------------
+Only sessions whose total audio duration is <= 40 seconds are kept. This is
+because:
+  - The Granite Speech model's audio encoder has a practical upper limit.
+  - 78.1% of the 45,951 entries fall within this threshold.
+  - Longer sessions produce very long audio embeddings that do not fit in
+    the 256-token prompt budget without truncation.
+
+After filtering: 35,881 entries over 2,013 unique sessions.
+
+
+Audio Reconstruction (Session-Level Concatenation)
+---------------------------------------------------
+Since DailyTalk only provides utterance-level WAVs, the session audio is
+reconstructed by:
+  1. Listing all .wav files in the session directory.
+  2. Sorting them by the leading turn index in the filename.
+  3. Concatenating them in turn order into a single numpy array.
+  4. Resampling each utterance to 16,000 Hz (mono) before concatenation.
+     (scipy.signal.resample_poly is used if available; falls back to linear
+      interpolation otherwise.)
+  5. Writing the result as a 16-bit float WAV to an audio cache directory:
+       out_dir/audio/{session_id}.wav
+
+Caching is idempotent: if the cache file already exists the concatenation step
+is skipped on subsequent runs.
+
+
+Train / Validation / Test Split
+--------------------------------
+The nvidia/LongAudio dataset has no official splits. A deterministic hash-based
+assignment is used to ensure reproducibility across runs:
+
+  hash_value = MD5(str(entry_id)).hexdigest()[:8]  # 8 hex chars -> [0, 1)
+  if hash_value < test_frac  (default 0.10): -> test
+  elif hash_value < test_frac + val_frac (default 0.20): -> validation
+  else: -> train
+
+This assigns ~10% to test, ~10% to validation, ~80% to train, purely based on
+the entry ID with no shuffling dependency on filesystem order.
+
+
+Output Format
+-------------
+The dataset is saved as a HuggingFace DatasetDict via save_to_disk():
+
+  out_dir/
+    audio/
+      0.wav         <- cached session-level WAV files
+      1.wav
+      ...
+    dataset/
+      train/        <- Arrow shards
+      validation/
+      test/
+      dataset_dict.json
+
+Each example has the following columns:
+
+  task      (string)  : "dailytalk_longaudio"
+  id        (string)  : LongAudio entry ID (unique per QA pair)
+  prompt    (string)  : Question with <|audio|> placeholder, formatted for
+                        Granite Speech (chat-template applied at eval time)
+  reference (string)  : Ground-truth answer text (~19 words)
+  audio     (Audio)   : HuggingFace Audio feature at 16,000 Hz sampling rate
+                        (decoded lazily from the cached session WAV)
+  duration  (float64) : Session duration in seconds
+
+
+How to Reproduce
+----------------
+Step 1 — Download DailyTalk audio from Google Drive:
+
+  bash scripts/speech/download_and_prepare_dailytalk_longaudio.sh
+
+  Key environment variables:
+    DAILYTALK_DIR  (default: $SPEECH_DATA_ROOT/raw/DailyTalk)
+    OUT_DIR        (default: TreeRL-main/data/dailytalk_longaudio)
+    SKIP_DOWNLOAD  set to 1 if audio already downloaded
+    MAX_DURATION_SECS (default: 40)
+
+Step 2 — Or run the prepare script directly if audio is already downloaded:
+
+  python scripts/data_prep/prepare_dailytalk_longaudio.py \
+      --dailytalk_dir $SPEECH_DATA_ROOT/raw/DailyTalk \
+      --out_dir data/dailytalk_longaudio \
+      --max_duration_secs 40 \
+      --allow_missing_audio 0
+
+The script downloads DailyTalk_LongAudio.json from nvidia/LongAudio
+automatically via the HuggingFace Hub API (hf_hub_download).

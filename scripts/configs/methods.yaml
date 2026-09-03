@@ -1,0 +1,12 @@
+# Training methods. Both run train_reinforce_ray_speech.py with
+# `--method <name>`; the extra value-args listed under `args` are emitted from the
+# resolved config. Everything else is shared (see speechrl.py REINFORCE_BASE_KEYS).
+
+leaf:
+  family: reinforce
+  args: [fork_budget_B, fork_min_prefix_tokens, advantage_terms]
+
+grpo:
+  family: reinforce
+  args: []
+

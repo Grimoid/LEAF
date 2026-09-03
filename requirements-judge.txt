@@ -1,0 +1,11 @@
+# Separate environment for the LLM-as-judge and VoiceBench judging phases (vLLM-served judges:
+# Qwen2.5-14B-Instruct, Unbabel/M-Prometheus-14B, BAAI/JudgeLM-13B-v1.0).
+# Keep it separate from the training env so the judge stack does not constrain torch/transformers.
+vllm>=0.6
+transformers>=4.45
+datasets
+scipy
+numpy
+tqdm
+PyYAML
+sacrebleu

@@ -1,0 +1,77 @@
+# Shared default values for the `speechrl` launcher.
+# Precedence (later overrides earlier): defaults < dataset < method < model < CLI --set
+#
+# The `train` block reproduces the configuration of the reported LEAF / GRPO runs
+# (granite-speech-3.3-2b on 3 GPUs: 2 actors + 1 reference). Only the GPU layout
+# (actor_num_gpus_per_node / ref_num_gpus_per_node) is hardware-dependent.
+
+# ---- RL training (train_reinforce_ray_speech.py) ----
+train:
+  train_split: train
+  max_samples: 0
+  actor_num_gpus_per_node: 2
+  ref_num_gpus_per_node: 1
+  actor_num_gpus_per_actor: 1.0
+  ref_num_gpus_per_actor: 1.0
+  micro_rollout_batch_size: 1
+  micro_train_batch_size: 1
+  rollout_batch_size: 6
+  train_batch_size: 6
+  num_episodes: 1                   # passes over the training prompts (paper: epochs run as warm-restarts)
+  max_epochs: 1
+  eval_steps: 200
+  eval_limit: 256
+  eval_split: validation
+  eval_do_sample: 1
+  eval_temperature: 0.9
+  eval_top_p: 0.9
+  eval_max_new_tokens: 200
+  save_steps: 500
+  logging_steps: 10
+  prompt_max_len: 256
+  generate_max_len: 200             # max response length (paper Table 7)
+  temperature: 1.0
+  top_p: 0.9
+  actor_learning_rate: 5e-6
+  init_kl_coef: 0.02
+  reward_mode: bleu
+  # CASING CONVENTION: training reward is CASE-SENSITIVE (lowercase_bleu=0); the final
+  # evaluations (eval/judge blocks below) are CASE-INSENSITIVE (lowercase_bleu=1, eval_lowercase=1).
+  lowercase_bleu: 0                 # cased sentence-BLEU reward during training
+  eval_lowercase: 0                 # periodic in-training validation: cased (as in the reported runs)
+  use_lora: 1
+  continue_lora: 0                  # 1 = warm-start: keep training the adapter given as --pretrain
+  lora_rank: 64
+  lora_alpha: 128
+  lora_dropout: 0.05
+  bf16: true
+  adam_offload: 0
+  load_ckpt: 1                      # auto-resume from the latest DeepSpeed ckpt in the run dir
+  save_ckpt: 1
+  print_rollout_samples: 0
+  ref_pretrain: ""                  # empty -> same as pretrain (the base model)
+  gen_prompt_batch_size: 1
+  # ---- rollout / fork budgets (paper notation) ----
+  rollout_budget_K: 8               # K = complete responses sampled i.i.d. per prompt (both methods)
+  fork_budget_B: 2                  # B = maximum number of selected fork boundaries (LEAF)
+  fork_min_prefix_tokens: 1         # earliest token boundary eligible for fork selection
+  advantage_terms: both             # LEAF span-credit ablation: both (GA+LA, paper) | global | local
+
+# ---- Checkpoint evaluation with text metrics (scripts/eval/eval_*.py) ----
+# Case-insensitive (lowercase_bleu=1, eval_lowercase=1): the reporting convention.
+eval:
+  num_gpus: auto
+  split: test
+  num_runs: 5                       # sampled decoding -> average over 5 seeds
+  base_seed: 42
+  limit: 0
+  random_subset_seed: -1
+  temperature: 0.9
+  top_p: 0.9
+  do_sample: 1
+  max_new_tokens: 200
+  eval_batch_size: 8
+  with_bertscore: 1
+  bertscore_lang: en
+  lowercase_bleu: 1
+  eval_lowercase: 1
