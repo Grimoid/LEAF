@@ -5,9 +5,28 @@ tree-based RL method for speech-aware large language model (SALLM) post-training
 **GRPO** baseline it is compared against. This repository accompanies the EMNLP 2026 paper
 *"LEAF: Growing Trees Without Branching for Speech-Aware Large Language Model Post-Training"*.
 
+Paper link:[https://arxiv.org/pdf/2606.07610](https://arxiv.org/pdf/2606.07610)
+
 The training stack is Ray + DeepSpeed (ZeRO-2) + LoRA with in-actor HuggingFace generation.
 This is the code that produced the results reported in the paper; the default configuration
 (`scripts/configs/defaults.yaml`) is the configuration of those runs.
+
+
+## Citation
+
+If you use this code in your research, please cite our paper:
+
+```bibtex
+@misc{gerogiannis2026leafgrowingtreesbranching,
+      title={LEAF: Growing Trees Without Branching for Speech-Aware Large Language Model Post-Training}, 
+      author={Argyrios Gerogiannis and Yekaterina Yegorova and Mark Hasegawa-Johnson and Venugopal V. Veeravalli},
+      year={2026},
+      eprint={2606.07610},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2606.07610}, 
+}
+```
 
 ---
 
