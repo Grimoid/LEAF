@@ -1,9 +1,6 @@
-# LEAF: Growing Trees Without Branching for Speech-Aware LLM Post-Training
+# LEAF: Growing Trees Without Branching for Speech-Aware LLM Post-Training (EMNLP 2026)
 
-Code for **LEAF** (**L**ow-rank **E**xploration with **A**daptive **F**orking), a retrospective
-tree-based RL method for speech-aware large language model (SALLM) post-training, and the
-**GRPO** baseline it is compared against. This repository accompanies the EMNLP 2026 paper
-*"LEAF: Growing Trees Without Branching for Speech-Aware Large Language Model Post-Training"*.
+**Argyrios Gerogiannis**, Yekaterina Yegorova, Mark Hasegawa-Johnson, Venugopal V. Veeravalli
 
 Paper link: [https://arxiv.org/pdf/2606.07610](https://arxiv.org/pdf/2606.07610)
 
